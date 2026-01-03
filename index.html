@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PriyKunj - An Educative Shelter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Animation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --primary: #1a2238;
+            --secondary: #9daaf2;
+            --background: #fdfdfd;
+            --accent: #ff6a3d;
+            --hover: #f4db7d;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            color: var(--primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Lenis Smooth Scroll Fix */
+        html.lenis {
+            height: auto;
+        }
+        .lenis.lenis-smooth {
+            scroll-behavior: auto !important;
+        }
+        .lenis.lenis-smooth [data-lenis-prevent] {
+            overscroll-behavior: contain;
+        }
+        .lenis.lenis-stopped {
+            overflow: hidden;
+        }
+
+        /* Custom Cursor - Hidden on mobile */
+        #cursor {
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: multiply;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        @media (max-width: 768px) {
+            #cursor { display: none; }
+        }
+
+        .text-primary { color: var(--primary); }
+        .text-secondary { color: var(--secondary); }
+        .bg-primary { background-color: var(--primary); }
+        .bg-secondary { background-color: var(--secondary); }
+        .bg-accent { background-color: var(--accent); }
+        
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-primary:hover {
+            background-color: var(--hover);
+            color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        .btn-outline {
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .card {
+            background: white;
+            border: 1px solid rgba(157, 170, 242, 0.2);
+            transition: border-color 0.3s ease;
+        }
+        .card:hover {
+            border-color: var(--accent);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: var(--accent);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Reveal Styles */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        /* Glassmorphism for Navbar */
+        nav.scrolled {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            height: 70px;
+            border-bottom: 1px solid rgba(26, 34, 56, 0.05);
+        }
+
+        /* Hero Background */
+        .hero-bg {
+            background: radial-gradient(circle at 50% 50%, #fff 0%, #f0f4ff 100%);
+            position: relative;
+        }
+        .hero-grid {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(26, 34, 56, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(26, 34, 56, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(circle at center, black, transparent 85%);
+            pointer-events: none;
+        }
+
+        /* Gallery Image Hover Effect */
+        .gallery-item img {
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .gallery-item:hover img {
+            transform: scale(1.1);
+        }
+        
+        /* Badge Animation */
+        @keyframes shine {
+            from { left: -100%; }
+            to { left: 100%; }
+        }
+        .badge-shine::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transform: skewX(-20deg);
+            animation: shine 3s infinite;
+        }
+
+        /* Logo Shine Effect */
+        .logo-shine {
+            position: relative;
+            overflow: hidden;
+        }
+        .logo-shine::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -150%;
+            width: 50%;
+            height: 200%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: rotate(30deg);
+            transition: left 0.6s ease;
+        }
+        .group:hover .logo-shine::after {
+            left: 150%;
+        }
+
+        /* Mobile Menu */
+        #mobileMenu {
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(-100%);
+        }
+        #mobileMenu.active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="cursor"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-transparent border-b border-transparent py-4 px-6 md:px-12 flex justify-between items-center h-20 transition-all duration-500">
+        <a href="#" class="flex items-center gap-3 text-lg md:text-xl font-bold tracking-tight text-primary group z-50">
+            <!-- Refined Thin Border Logo Container -->
+            <div class="logo-shine relative p-1 bg-[#1a2238] border-[1px] border-[#ff6a3d]/40 rounded-lg transform group-hover:scale-110 transition-all duration-500 shadow-sm group-hover:border-[#ff6a3d] group-hover:shadow-[0_0_15px_rgba(255,106,61,0.2)]">
+                <img src="logo.jpeg" alt="logo" class="w-8 h-8 md:w-10 md:h-10 object-contain rounded-md">
+            </div>
+            <span class="flex flex-col leading-none">
+                <span class="tracking-[0.1em]">PRIY<span class="text-accent">KUNJ</span></span>
+                <span class="text-[8px] md:text-[9px] uppercase tracking-[0.3em] text-secondary mt-1 font-medium group-hover:text-accent transition-colors">Educative Shelter</span>
+            </span>
+        </a>
+
+        <!-- Desktop Links -->
+        <div class="hidden lg:flex space-x-8 text-sm font-medium">
+            <a href="#about" class="nav-link">About</a>
+            <a href="#courses" class="nav-link">Courses</a>
+            <a href="#results" class="nav-link">Results</a>
+            <a href="#gallery" class="nav-link">Gallery</a>
+            <a href="#contact" class="nav-link text-accent font-semibold">Contact</a>
+        </div>
+
+        <!-- Mobile Toggle -->
+        <button class="lg:hidden text-primary z-50 p-2" id="mobileMenuBtn">
+            <i data-lucide="menu" id="menuIcon"></i>
+        </button>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenu" class="fixed inset-0 bg-white z-40 lg:hidden flex flex-col items-center justify-center space-y-8 text-2xl font-bold">
+        <a href="#about" class="mobile-nav-link">About</a>
+        <a href="#courses" class="mobile-nav-link">Courses</a>
+        <a href="#results" class="mobile-nav-link">Results</a>
+        <a href="#gallery" class="mobile-nav-link">Gallery</a>
+        <a href="#contact" class="mobile-nav-link text-accent">Contact</a>
+    </div>
+
+    <!-- Hero Section -->
+    <header class="hero-bg min-h-screen flex flex-col justify-center items-center text-center px-6 py-24 md:py-20 relative overflow-hidden">
+        <div class="hero-grid"></div>
+        
+        <!-- Palette Blur Shapes -->
+        <div class="absolute top-[-5%] right-[-5%] w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-[#ff6a3d22] rounded-full blur-[100px] md:blur-[140px] pointer-events-none"></div>
+        <div class="absolute bottom-[-10%] left-[-10%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] bg-[#9daaf222] rounded-full blur-[120px] md:blur-[160px] pointer-events-none"></div>
+
+        <div class="max-w-4xl mx-auto z-10">
+            <div class="hero-content overflow-hidden">
+                <h1 class="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-6 text-primary reveal">
+                    An Educative <span class="text-accent">Shelter</span>
+                </h1>
+            </div>
+            <p class="text-base md:text-xl text-secondary mb-10 max-w-2xl mx-auto font-medium reveal px-4">
+               Specially designed with fee concessions for students from rural areas who have limited access to external coaching facilities.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4 reveal">
+                <a href="#demo" class="btn-primary px-8 py-4 rounded-xl font-bold text-center shadow-xl shadow-[#ff6a3d33]">Book Free Demo</a>
+                <a href="#courses" class="btn-outline px-8 py-4 rounded-xl font-bold text-center bg-white/50 backdrop-blur-sm">View Courses</a>
+            </div>
+        </div>
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-40 hidden md:block">
+            <i data-lucide="chevron-down" class="text-primary"></i>
+        </div>
+    </header>
+
+    <!-- About Section -->
+    <section id="about" class="py-16 md:py-32 px-6 bg-white overflow-hidden">
+        <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 md:gap-20 items-center">
+            <div class="reveal-left">
+                <span class="text-accent font-bold tracking-widest text-xs uppercase mb-4 block">Our Philosophy</span>
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 text-primary">Academic rigor paired with mindful mentorship.</h2>
+                <p class="text-secondary mb-8 italic text-lg font-medium">"We don't just teach subjects; we cultivate the intellectual curiosity required to master them."</p>
+                <p class="text-primary opacity-80 mb-8 leading-relaxed text-base md:text-lg">
+                    PriyKunj provides a high-pressure yet supportive environment for students aiming for top-tier universities. Our experience centers on building a deep conceptual foundation.
+                </p>
+            </div>
+            <div class="grid grid-cols-2 gap-4 md:gap-6 reveal-right">
+                <div class="p-6 md:p-8 border border-[#9daaf222] bg-[#9daaf208] rounded-2xl stats-card">
+                    <div class="text-3xl md:text-4xl font-black text-primary mb-2 count" data-target="10">0</div>
+                    <div class="text-[10px] md:text-xs text-secondary uppercase tracking-wider font-bold">Years Experience</div>
+                </div>
+                <div class="p-6 md:p-8 border border-[#9daaf222] bg-[#9daaf208] rounded-2xl stats-card">
+                    <div class="text-3xl md:text-4xl font-black text-primary mb-2 count" data-target="200">0</div>
+                    <div class="text-[10px] md:text-xs text-secondary uppercase tracking-wider font-bold">Students Mentored</div>
+                </div>
+                <div class="p-6 md:p-8 border border-[#9daaf222] bg-[#9daaf208] rounded-2xl stats-card">
+                    <div class="text-3xl md:text-4xl font-black text-primary mb-2 count" data-target="94">0</div>
+                    <div class="text-[10px] md:text-xs text-secondary uppercase tracking-wider font-bold">Success Rate %</div>
+                </div>
+                <div class="p-6 md:p-8 border border-[#9daaf222] bg-[#9daaf208] rounded-2xl stats-card">
+                    <div class="text-3xl md:text-4xl font-black text-primary mb-2">15:1</div>
+                    <div class="text-[10px] md:text-xs text-secondary uppercase tracking-wider font-bold">Batch Ratio</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Courses Section -->
+    <section id="courses" class="py-16 md:py-32 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-12 md:mb-20 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold text-primary">Specialized Programs</h2>
+                <div class="h-1 w-20 bg-accent mx-auto mt-4"></div>
+            </div>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                <div class="card p-8 md:p-10 rounded-2xl reveal-up border-none shadow-sm">
+                    <div class="w-12 h-12 bg-[#ff6a3d11] text-accent rounded-xl flex items-center justify-center mb-6 md:mb-8">
+                        <i data-lucide="microscope"></i>
+                    </div>
+                    <h3 class="text-xl md:text-2xl font-bold mb-4">Foundation Bridge</h3>
+                    <p class="text-secondary font-medium mb-8 text-sm md:text-base">Class 1 ~ 7. Focusing on logic and building core conceptual foundations.</p>
+                    <a href="#demo" class="group flex items-center text-accent font-bold text-sm md:text-base">Enroll Now <i data-lucide="arrow-right" class="w-4 h-4 ml-2 transition-transform group-hover:translate-x-2"></i></a>
+                </div>
+                <div class="card p-8 md:p-10 rounded-2xl reveal-up border-none shadow-xl shadow-[#1a22380a] bg-white lg:scale-105 z-10">
+                    <div class="w-12 h-12 bg-[#ff6a3d11] text-accent rounded-xl flex items-center justify-center mb-6 md:mb-8">
+                        <i data-lucide="graduation-cap"></i>
+                    </div>
+                    <h3 class="text-xl md:text-2xl font-bold mb-4">Online Summer Camp</h3>
+                    <p class="text-secondary font-medium mb-8 text-sm md:text-base">Origami, Drawing, Lippan Art, Mehandi, Cooking without heat, Handwriting Improvement.</p>
+                    <a href="#demo" class="group flex items-center text-accent font-bold text-sm md:text-base">Enroll Now <i data-lucide="arrow-right" class="w-4 h-4 ml-2 transition-transform group-hover:translate-x-2"></i></a>
+                </div>
+                <div class="card p-8 md:p-10 rounded-2xl reveal-up border-none shadow-sm sm:col-span-2 lg:col-span-1">
+                    <div class="w-12 h-12 bg-[#ff6a3d11] text-accent rounded-xl flex items-center justify-center mb-6 md:mb-8">
+                        <i data-lucide="zap"></i>
+                    </div>
+                    <h3 class="text-xl md:text-2xl font-bold mb-4">Yoga & Zumba</h3>
+                    <p class="text-secondary font-medium mb-8 text-sm md:text-base">Online Yoga and Zumba classes for women and kids.</p>
+                    <a href="#demo" class="group flex items-center text-accent font-bold text-sm md:text-base">Enroll Now <i data-lucide="arrow-right" class="w-4 h-4 ml-2 transition-transform group-hover:translate-x-2"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section class="py-16 md:py-32 px-6 bg-primary text-white relative overflow-hidden">
+        <div class="max-w-6xl mx-auto relative z-10">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-16">
+                <div class="reveal-up">
+                    <i data-lucide="user-check" class="w-10 h-10 text-accent mb-6"></i>
+                    <h4 class="text-xl font-bold mb-4">Expert Faculty</h4>
+                    <p class="text-sm text-secondary leading-relaxed font-medium">All mentors have 10+ years of domain experience.</p>
+                </div>
+                <div class="reveal-up">
+                    <i data-lucide="book-open" class="w-10 h-10 text-accent mb-6"></i>
+                    <h4 class="text-xl font-bold mb-4">Proprietary Material</h4>
+                    <p class="text-sm text-secondary leading-relaxed font-medium">Research-backed modules simplifying complex problem-solving.</p>
+                </div>
+                <div class="reveal-up">
+                    <i data-lucide="line-chart" class="w-10 h-10 text-accent mb-6"></i>
+                    <h4 class="text-xl font-bold mb-4">Progress Tracking</h4>
+                    <p class="text-sm text-secondary leading-relaxed font-medium">Detailed analytical reports for bi-weekly assessments.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Methodology -->
+    <section class="py-16 md:py-32 px-6">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-16 md:mb-24 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold text-primary">Our Step Methodology</h2>
+            </div>
+            <div class="space-y-12 md:space-y-24 relative">
+                <div class="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-[#9daaf233] -translate-x-1/2 hidden sm:block"></div>
+                <div class="flex flex-col sm:flex-row gap-6 md:gap-8 items-start sm:items-center relative z-10 reveal-up">
+                    <div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white border-2 border-accent flex items-center justify-center font-bold text-accent shadow-lg shadow-[#ff6a3d22] flex-shrink-0">01</div>
+                    <div class="sm:text-right sm:w-1/2"><h5 class="font-bold text-xl md:text-2xl mb-2 md:mb-3">Concept Mapping</h5><p class="text-secondary font-medium text-sm md:text-base">Breaking down complex theories into simple first-principles.</p></div>
+                    <div class="hidden sm:block w-1/2"></div>
+                </div>
+                <div class="flex flex-col sm:flex-row-reverse gap-6 md:gap-8 items-start sm:items-center relative z-10 reveal-up">
+                    <div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white border-2 border-accent flex items-center justify-center font-bold text-accent shadow-lg shadow-[#ff6a3d22] flex-shrink-0">02</div>
+                    <div class="sm:text-left sm:w-1/2"><h5 class="font-bold text-xl md:text-2xl mb-2 md:mb-3">Guided Application</h5><p class="text-secondary font-medium text-sm md:text-base">Solving graduated difficulty levels under active mentorship.</p></div>
+                    <div class="hidden sm:block w-1/2"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results -->
+    <section id="results" class="py-16 md:py-32 px-6 bg-white border-y border-[#9daaf211]">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-primary mb-12 md:mb-20 reveal">Success Metrics</h2>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
+                <div class="reveal-up">
+                    <div class="text-3xl md:text-5xl font-black text-accent mb-2">Top 100</div>
+                    <div class="text-[9px] md:text-[10px] uppercase tracking-widest text-secondary font-bold">AIR Selections</div>
+                </div>
+                <div class="reveal-up">
+                    <div class="text-3xl md:text-5xl font-black text-accent mb-2">98.4%</div>
+                    <div class="text-[9px] md:text-[10px] uppercase tracking-widest text-secondary font-bold">Avg. Board Result</div>
+                </div>
+                <div class="reveal-up">
+                    <div class="text-3xl md:text-5xl font-black text-accent mb-2">120+</div>
+                    <div class="text-[9px] md:text-[10px] uppercase tracking-widest text-secondary font-bold">Medical Seats</div>
+                </div>
+                <div class="reveal-up">
+                    <div class="text-3xl md:text-5xl font-black text-accent mb-2">15%</div>
+                    <div class="text-[9px] md:text-[10px] uppercase tracking-widest text-secondary font-bold">Mean Uplift</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Photo Gallery Section -->
+    <section id="gallery" class="py-16 md:py-32 px-6 bg-[#f0f4ff55]">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-12 md:mb-16 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold text-primary">Campus Gallery</h2>
+                <p class="text-secondary font-medium mt-4 text-sm md:text-base px-4">A glimpse into our modern learning environment.</p>
+            </div>
+            
+            <!-- Layer 1 -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div class="gallery-item relative overflow-hidden rounded-xl h-48 sm:h-64 md:h-80 reveal-up">
+                    <img src="stu1.jpeg" class="w-full h-full object-cover grayscale hover:grayscale-0" alt="Student 1">
+                </div>
+                <div class="gallery-item relative overflow-hidden rounded-xl h-48 sm:h-64 md:h-80 reveal-up lg:mt-12">
+                    <img src="stu2.jpeg" class="w-full h-full object-cover grayscale hover:grayscale-0" alt="Student 2">
+                </div>
+                <div class="gallery-item relative overflow-hidden rounded-xl h-48 sm:h-64 md:h-80 reveal-up">
+                    <img src="stu3.jpeg" class="w-full h-full object-cover grayscale hover:grayscale-0" alt="Student 3">
+                </div>
+                <div class="gallery-item relative overflow-hidden rounded-xl h-48 sm:h-64 md:h-80 reveal-up lg:mt-12">
+                    <img src="stu4.jpeg" class="w-full h-full object-cover grayscale hover:grayscale-0" alt="Student 4">
+                </div>
+            </div>
+
+            <!-- Layer 2 -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div class="gallery-item relative overflow-hidden rounded-xl h-48 sm:h-64 md:h-80 reveal-up">
+                    <img src="p1.jpeg" class="w-full h-full object-cover grayscale hover:grayscale-0" alt="Program 1">
+                </div>
+                <div class="gallery-item relative overflow-hidden rounded-xl h-48 sm:h-64 md:h-80 reveal-up lg:mt-12">
+                    <img src="p2.jpeg" class="w-full h-full object-cover grayscale hover:grayscale-0" alt="Program 2">
+                </div>
+                <div class="gallery-item relative overflow-hidden rounded-xl h-48 sm:h-64 md:h-80 reveal-up">
+                    <img src="p3.jpeg" class="w-full h-full object-cover grayscale hover:grayscale-0" alt="Program 3">
+                </div>
+                <div class="gallery-item relative overflow-hidden rounded-xl h-48 sm:h-64 md:h-80 reveal-up lg:mt-12">
+                    <img src="p4.jpeg" class="w-full h-full object-cover grayscale hover:grayscale-0" alt="Program 4">
+                </div>
+            </div>
+
+            <!-- Layer 3 -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="gallery-item relative overflow-hidden rounded-xl h-48 sm:h-64 md:h-80 reveal-up">
+                    <img src="l1.jpeg" class="w-full h-full object-cover grayscale hover:grayscale-0" alt="Library 1">
+                </div>
+                <div class="gallery-item relative overflow-hidden rounded-xl h-48 sm:h-64 md:h-80 reveal-up lg:mt-12">
+                    <img src="l2.jpeg" class="w-full h-full object-cover grayscale hover:grayscale-0" alt="Library 2">
+                </div>
+                <div class="gallery-item relative overflow-hidden rounded-xl h-48 sm:h-64 md:h-80 reveal-up">
+                    <img src="l3.jpeg" class="w-full h-full object-cover grayscale hover:grayscale-0" alt="Library 3">
+                </div>
+                <div class="gallery-item relative overflow-hidden rounded-xl h-48 sm:h-64 md:h-80 reveal-up lg:mt-12">
+                    <img src="l4.jpeg" class="w-full h-full object-cover grayscale hover:grayscale-0" alt="Library 4">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lead Capture Form -->
+    <section id="demo" class="py-16 md:py-32 px-6">
+        <div class="max-w-5xl mx-auto grid lg:grid-cols-2 gap-12 md:gap-16 items-center">
+            <div class="reveal-left">
+                <h2 class="text-3xl md:text-4xl font-bold text-primary mb-6">Experience the Difference.</h2>
+                <p class="text-secondary font-medium mb-8 text-base md:text-lg">Schedule a free 1-hour conceptual session with our core faculty. Get personalized career guidance.</p>
+            </div>
+            <div class="bg-[#1a223805] p-8 md:p-10 rounded-3xl reveal-right border border-[#9daaf222]">
+                <form id="leadForm" class="space-y-4 md:space-y-6">
+                    <input type="text" placeholder="Your Name" required class="w-full p-4 border border-[#9daaf244] rounded-xl text-sm focus:ring-2 focus:ring-accent/20 bg-white outline-none transition-all">
+                    <input type="tel" placeholder="Mobile Number" required class="w-full p-4 border border-[#9daaf244] rounded-xl text-sm focus:ring-2 focus:ring-accent/20 bg-white outline-none transition-all">
+                    <button type="submit" class="btn-primary w-full py-4 md:py-5 rounded-xl font-bold shadow-lg shadow-[#ff6a3d33] transform active:scale-95 transition-transform text-sm md:text-base">Claim Free Session</button>
+                </form>
+                <div id="formSuccess" class="hidden mt-6 p-4 bg-green-50 text-green-700 text-sm text-center rounded-xl font-semibold">Session Booked! Redirecting...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-12 md:py-24 px-6 border-t border-gray-100">
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-3xl font-bold text-primary mb-8">Reach Out Directly</h2>
+            <div class="flex flex-col sm:flex-row justify-center gap-6">
+                <a href="tel:+919552238337" class="flex items-center justify-center gap-3 p-6 bg-white rounded-2xl shadow-sm border border-gray-100 hover:border-accent transition-colors group">
+                    <i data-lucide="phone" class="text-accent"></i>
+                    <span class="font-bold">+91 95522 38337</span>
+                </a>
+                <a href="mailto:priyacharvi03@gmail.com" class="flex items-center justify-center gap-3 p-6 bg-white rounded-2xl shadow-sm border border-gray-100 hover:border-accent transition-colors group">
+                    <i data-lucide="mail" class="text-accent"></i>
+                    <span class="font-bold">priyacharvi03@gmail.com</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-[#9daaf211] pt-16 md:pt-20 pb-10 px-6 overflow-hidden">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-start gap-12 mb-16 md:mb-20">
+                <div>
+                    <a href="#" class="flex items-center gap-3 text-2xl font-bold text-primary group">
+                        <div class="p-1.5 bg-[#1a2238] border border-primary/10 rounded-xl transform group-hover:scale-110 transition-all duration-500 shadow-sm">
+                            <img src="logo.jpeg" alt="logo" class="w-10 h-10 object-contain rounded-lg">
+                        </div>
+                        <span>PRIY<span class="text-accent">KUNJ</span></span>
+                    </a>
+                    <p class="text-secondary text-sm max-w-xs font-medium mt-4">Academic excellence and personal mentorship since 2025.</p>
+                </div>
+                <div class="grid grid-cols-2 gap-8 md:gap-16 w-full md:w-auto">
+                    <div>
+                        <h6 class="font-bold text-primary mb-6 text-xs uppercase tracking-widest">Connect</h6>
+                        <div class="flex gap-6">
+                            <a href="tel:+919552238337" class="text-secondary hover:text-accent transition-colors"><i data-lucide="phone-call"></i></a>
+                            <a href="https://www.instagram.com/priykunj2025" target="_blank" class="text-secondary hover:text-accent transition-colors"><i data-lucide="instagram"></i></a>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- Developer Badge Section -->
+            <div class="pt-8 border-t border-gray-50 flex flex-col md:flex-row justify-between items-center gap-8 md:gap-6">
+                <!-- Badge on the Left with HIGH VISIBILITY -->
+                <a href="https://4bytez.dev" target="_blank" class="group relative px-5 py-3 bg-[#1a2238] border border-white/30 rounded-full overflow-hidden transition-all duration-300 hover:shadow-[0_0_25px_rgba(255,106,61,0.5)] badge-shine w-full sm:w-auto text-center">
+                    <div class="relative z-10 flex items-center justify-center gap-3">
+                        <span class="text-[11px] md:text-[12px] text-white font-bold tracking-widest uppercase opacity-90">Developed by</span>
+                        <span class="text-[12px] md:text-[14px] text-[#ff6a3d] font-black tracking-widest uppercase group-hover:text-[#f4db7d] transition-colors drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">4Bytez.dev</span>
+                    </div>
+                </a>
+
+                <!-- Copyright on the Right -->
+                <p class="text-[9px] md:text-[10px] text-secondary uppercase tracking-[0.2em] order-last md:order-none">&copy; 2025 PriyKunj. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+        
+        // 1. Lenis Smooth Scroll
+        const lenis = new Lenis({ 
+            duration: 1.2, 
+            smoothWheel: true,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
+        });
+        function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+        requestAnimationFrame(raf);
+
+        // 2. Custom Cursor
+        const cursor = document.getElementById('cursor');
+        document.addEventListener('mousemove', (e) => {
+            gsap.to(cursor, { x: e.clientX - 10, y: e.clientY - 10, duration: 0.1, opacity: 1 });
+        });
+
+        // 3. GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Navbar Scroll
+        ScrollTrigger.create({
+            start: 'top -50',
+            onEnter: () => document.querySelector('nav').classList.add('scrolled'),
+            onLeaveBack: () => document.querySelector('nav').classList.remove('scrolled'),
+        });
+
+        // Global Reveals
+        gsap.utils.toArray('.reveal').forEach(el => {
+            gsap.to(el, { scrollTrigger: { trigger: el, start: 'top 85%' }, opacity: 1, y: 0, duration: 1.2, ease: 'power3.out' });
+        });
+
+        gsap.utils.toArray('.reveal-up').forEach(el => {
+            gsap.from(el, { scrollTrigger: { trigger: el, start: 'top 85%' }, y: 60, opacity: 0, duration: 1, ease: 'power2.out' });
+        });
+
+        // Lateral Reveals (Mobile Optimized)
+        gsap.utils.toArray('.reveal-left').forEach(el => {
+            gsap.from(el, { scrollTrigger: { trigger: el, start: 'top 85%' }, x: window.innerWidth < 768 ? -20 : -50, opacity: 0, duration: 1.2, ease: 'power3.out' });
+        });
+        gsap.utils.toArray('.reveal-right').forEach(el => {
+            gsap.from(el, { scrollTrigger: { trigger: el, start: 'top 85%' }, x: window.innerWidth < 768 ? 20 : 50, opacity: 0, duration: 1.2, ease: 'power3.out' });
+        });
+
+        // Counters
+        document.querySelectorAll('.count').forEach(count => {
+            ScrollTrigger.create({
+                trigger: count,
+                onEnter: () => {
+                    gsap.to(count, { innerText: parseInt(count.dataset.target), duration: 2, snap: { innerText: 1 }, ease: 'power1.inOut' });
+                }
+            });
+        });
+
+        // 4. Mobile Menu Logic
+        const menuBtn = document.getElementById('mobileMenuBtn');
+        const menu = document.getElementById('mobileMenu');
+        const menuLinks = document.querySelectorAll('.mobile-nav-link');
+        let isMenuOpen = false;
+
+        function toggleMenu() {
+            isMenuOpen = !isMenuOpen;
+            menu.classList.toggle('active');
+            document.body.style.overflow = isMenuOpen ? 'hidden' : 'auto';
+            document.getElementById('menuIcon').innerHTML = isMenuOpen ? '<i data-lucide="x"></i>' : '<i data-lucide="menu"></i>';
+            lucide.createIcons();
+        }
+
+        menuBtn.addEventListener('click', toggleMenu);
+        menuLinks.forEach(link => link.addEventListener('click', toggleMenu));
+
+        // 5. Form Redirection Logic
+        document.getElementById('leadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = this.querySelector('input[type="text"]').value;
+            const mobile = this.querySelector('input[type="tel"]').value;
+            
+            if(name && mobile) {
+                this.classList.add('opacity-50', 'pointer-events-none');
+                document.getElementById('formSuccess').classList.remove('hidden');
+                setTimeout(() => {
+                    window.location.href = "tel:+919552238337";
+                }, 800);
+            }
+        });
+    </script>
+</body>
+</html>
